@@ -1,6 +1,10 @@
 # A Laravel Nova multicolumn filter
 Filter for several columns
 
+### Demo
+
+![Demo](http://g.recordit.co/0w1DQs9rbG.gif)
+
 ### Installation
 
 Run this command in your Laravel Nova project:
