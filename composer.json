@@ -1,0 +1,36 @@
+{
+    "name": "dddeeemmmooonnn/nova-multicolumn-filter",
+    "description": "A Laravel Nova multicolumn filter.",
+    "authors": [
+        {
+            "name": "Dmitry Turov",
+            "email": "dddeeemmmooonnntrue@gmail.com"
+        }
+    ],
+    "keywords": [
+        "laravel",
+        "nova"
+    ],
+    "license": "MIT",
+    "require": {
+        "php": ">=7.1.0",
+        "laravel/nova" : ">=2.0.7"
+    },
+    "autoload": {
+        "psr-4": {
+            "dddeeemmmooonnn\\NovaMulticolumnFilter\\": "src/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "dddeeemmmooonnn\\NovaMulticolumnFilter\\FilterServiceProvider"
+            ]
+        }
+    },
+    "config": {
+        "sort-packages": true
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true
+}
