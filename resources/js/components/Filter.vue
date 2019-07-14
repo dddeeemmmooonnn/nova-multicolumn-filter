@@ -3,12 +3,12 @@
         <h3 class="text-sm uppercase tracking-wide text-80 bg-30 p-3">{{ filter.name }}</h3>
 
         <div class="">
-            <div v-for="(value, index) in rows" class="flex p-2">
+            <div v-for="(value, index) in rows" class="flex p-2 w-full">
                 <Column :columns="columns"
                         :operators="operators"
                         :column="value.column"
                         :operator="value.operator"
-                        :search="value.search"
+                        :value="value.value"
                         :index="index"
                         @change="childChange"
                 >
@@ -52,40 +52,31 @@ export default {
 
     mounted() {
         let t = JSON.parse(this.options[0].value);
-        for (let i in t.columns) {
-            if (t.columns[i] instanceof Object) {
-                this.columns.push({
-                    label: t.columns[i].label,
-                    value: i,
-                    type: t.columns[i].type,
-                });
-            } else {
-                this.columns.push({
-                    label: t.columns[i],
-                    value: i,
-                    type: 'text',
-                });
-            }
-        }
-
-        for (let i in t.operators) {
-            this.operators.push({
-                label: t.operators[i],
-                value: i,
-            });
-        }
+        this.columns = t;
 
         try {
             this.rows = JSON.parse(this.value);
         } catch (e) {
             this.rows = [];
         }
+        if (this.rows.length === 0) {
+            for (let i in t) {
+                if (t[i].preset) {
+                    this.rows.push({
+                        column: i,
+                        operator: t[i].defaultOperator,
+                        value: encodeURIComponent(t[i].defaultValue),
+                    });
+                }
+            }
+            this.handleChange();
+        }
     },
 
     methods: {
         handleChange() {
             for (let i = 0; i < this.rows.length; i++) {
-                if (!this.rows[i].column || !this.rows[i].operator || !this.rows[i].search) {
+                if (!this.rows[i].column || !this.rows[i].operator || this.rows[i].value === '') {
                     return;
                 }
             }
@@ -109,7 +100,7 @@ export default {
             this.rows.push({
                 column: '',
                 operator: '',
-                search: '',
+                value: '',
             });
         },
 

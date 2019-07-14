@@ -1,61 +1,81 @@
 <template>
-    <div>
-        <select-control
+    <div style="flex: 1; align-items: center; justify-content: center;">
+        <select
             class="w-full form-control form-select"
             @change="handleChangeColumn"
-            :options="columns"
             :value="column"
         >
             <option value="" selected>&mdash;</option>
-        </select-control>
+            <option v-for="option in columns" :value="option.value">{{option.label}}</option>
+        </select>
 
-        <select-control
+        <select
+            v-if="columnType !== 'select' && columnType !== 'checkbox'"
             class="w-full form-control form-select"
             @change="handleChangeOperator"
-            :options="operators"
-            :value="operator"
+            v-model="operator"
         >
             <option value="" selected>&mdash;</option>
-        </select-control>
+            <option v-for="option in operators" :value="option.value">{{option.label}}</option>
+        </select>
 
         <input
+            v-if="columnType !== 'select' && columnType !== 'checkbox'"
             :type="columnType"
-            v-model="search"
-            @change="handleChange"
-            class="w-full form-input form-input-bordered form-control "
+            v-model="valueDecoded"
+            @keydown.stop="handleChangeData"
+            @change="handleChangeData"
+            class="w-full form-input form-input-bordered form-control"
         />
+
+        <input
+            v-if="columnType === 'checkbox'"
+            :type="columnType"
+            v-model="value"
+            @change="handleChangeCheckbox"
+            class=" form-control"
+        />
+
+        <select
+            v-if="columnType === 'select'"
+            class="w-full form-control form-select"
+            @change="handleChangeSelect"
+            v-model="value"
+        >
+            <option value="" selected>&mdash;</option>
+            <option v-for="option in options" :value="option.value">{{option.label}}</option>
+        </select>
     </div>
 </template>
 
 <script>
     export default {
         props: [
-            'columns', 'operators', 'column', 'operator', 'search', 'index',
+            'columns', 'column', 'operator', 'value', 'index',
         ],
 
         data() {
             return {
                 oldColumnType: this.columnType,
+                valueDecoded: decodeURIComponent(this.value),
             }
-        },
-
-        mounted() {
-            this.search = decodeURIComponent(this.search);
         },
 
         methods: {
             handleChange() {
                 this.$emit('change', this.index, {
                     column: this.column,
-                    operator: this.operator,
-                    search: encodeURIComponent(this.search),
+                    operator: this.getOperator,
+                    value: this.value,
                 });
             },
 
             handleChangeColumn(event) {
                 this.column = event.target.value;
-                if (this.columnType !== this.oldColumnType)
-                    this.search = '';
+                if (this.columnType !== this.oldColumnType) {
+                    this.value = encodeURIComponent(this.valueDecoded = this.defaultValue);
+                    this.operator = this.defaultOperator;
+                }
                 this.oldColumnType = this.columnType;
                 this.handleChange();
             },
@@ -64,12 +84,52 @@
                 this.operator = event.target.value;
                 this.handleChange();
             },
+
+            handleChangeData(event) {
+                this.debouncer(() => {
+                    if (event.which != 9) {
+                        this.value = encodeURIComponent(this.valueDecoded);
+                        this.handleChange();
+                    }
+                })
+            },
+
+            handleChangeCheckbox(event) {
+                this.value = this.value ? 1 : 0;
+                this.handleChange();
+            },
+
+            handleChangeSelect(event) {
+                this.value = encodeURIComponent(event.target.value);
+                this.handleChange();
+            },
+
+            debouncer: _.debounce(callback => callback(), 500),
         },
 
         computed: {
             columnType() {
-                let column = _.find(this.columns, ['value', this.column]);
-                return column ? column.type : 'text';
+                return this.column ? this.columns[this.column].type : 'text';
+            },
+
+            operators() {
+                return this.column ? this.columns[this.column].operators : [];
+            },
+
+            options() {
+                return this.column ? this.columns[this.column].options : [];
+            },
+
+            getOperator() {
+                return this.columnType === 'select' || this.columnType === 'checkbox' ? '=' : this.operator;
+            },
+
+            defaultOperator() {
+                return this.column && this.columns[this.column].defaultOperator ? this.columns[this.column].defaultOperator : '';
+            },
+
+            defaultValue() {
+                return this.column && this.columns[this.column].defaultValue ? this.columns[this.column].defaultValue : '';
             },
         },
     }
