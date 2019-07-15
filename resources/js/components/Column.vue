@@ -88,7 +88,7 @@
             handleChangeData(event) {
                 this.debouncer(() => {
                     if (event.which != 9) {
-                        this.value = encodeURIComponent(this.valueDecoded);
+                        this.value = encodeURIComponent(this.valueDecoded.trim());
                         this.handleChange();
                     }
                 })

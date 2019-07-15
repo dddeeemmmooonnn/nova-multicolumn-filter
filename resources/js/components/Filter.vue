@@ -64,8 +64,8 @@ export default {
                 if (t[i].preset) {
                     this.rows.push({
                         column: i,
-                        operator: t[i].defaultOperator,
-                        value: encodeURIComponent(t[i].defaultValue),
+                        operator: t[i].defaultOperator || '',
+                        value: encodeURIComponent(t[i].defaultValue || ''),
                     });
                 }
             }

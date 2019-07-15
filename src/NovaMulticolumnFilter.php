@@ -4,6 +4,7 @@ namespace dddeeemmmooonnn\NovaMulticolumnFilter;
 
 use Illuminate\Http\Request;
 use Laravel\Nova\Filters\Filter;
+use Laravel\Nova\Nova;
 
 class NovaMulticolumnFilter extends Filter
 {
@@ -13,9 +14,11 @@ class NovaMulticolumnFilter extends Filter
 
     public function apply(Request $request, $query, $value)
     {
+        $columns = $this->getOptions();
+
         foreach (json_decode($value, true) as $val) {
             $val['value'] = urldecode($val['value']);
-            if (!$val['operator'] && in_array($this->getOptions()[$val['column']]['type'], ['select', 'checkbox'])) {
+            if (!$val['operator'] && in_array($columns[$val['column']]['type'], ['select', 'checkbox'])) {
                 $val['operator'] = '=';
             }
 
@@ -27,10 +30,10 @@ class NovaMulticolumnFilter extends Filter
                 $val['value'] = '%' . $val['value'] . '%';
             }
 
-            if (isset($this->columns()[$val['column']]['type']) && $this->columns()[$val['column']]['type'] === 'date') {
-                $query = $query->whereDate($val['column'], $val['operator'], $val['value']);
+            if ($columns[$val['column']]['type'] === 'date') {
+                $query = $query->whereDate($columns[$val['column']]['column'], $val['operator'], $val['value']);
             } else {
-                $query = $query->where($val['column'], $val['operator'], $val['value']);
+                $query = $query->where($columns[$val['column']]['column'], $val['operator'], $val['value']);
             }
         }
         return $query;
@@ -39,38 +42,31 @@ class NovaMulticolumnFilter extends Filter
     protected function columns()
     {
         return [
-            'name' => [
-                'type' => 'text',
-                'label' => 'Имя',
-//                'operators' => 'default',
-                'defaultOperator' => '=',
-                'defaultValue' => 'админ',
+            'name' => '',
+            'email' => [
+                'defaultOperator' => 'LIKE',
+                'defaultValue' => 'adm',
                 'preset' => true,
             ],
-            'email' => [
-                'type' => 'email',
-                'label' => 'мыло',
-                'operators' => [
-                    '=' => '=',
-                    //...
-                ],
-                'defaultOperator' => '=',
-                'defaultValue' => 'admin@admin.ru',
+            'id1' => [
+                'type' => 'number',
+                'column' => 'id'
             ],
-            'id' => [
+            'id2' => [
                 'type' => 'select',
-                'label' => 'ид',
                 'options' => [
-                    '1' => 'первый',
-                    '2' => 'второй',
-                    //...
+                    '1' => 'One',
+                    '2' => 'Two',
                 ],
-                'defaultValue' => '1',
+                'column' => 'id',
+            ],
+            'id3' => [
+                'type' => 'checkbox',
+                'column' => 'id'
             ],
             'updated_at' => [
                 'type' => 'date',
-                'label' => 'обновлено',
-            ],
+            ]
         ];
     }
 
@@ -95,8 +91,12 @@ class NovaMulticolumnFilter extends Filter
     {
         $columns = $this->columns();
         foreach ($columns as $column => $value) {
+            if (is_string($value)) {
+                $value = [];
+            }
+
             if (!isset($value['label'])) {
-                $value['label'] = Nova::humanize($column);//!!
+                $value['label'] = Nova::humanize($column);
             }
 
             if (!isset($value['type'])) {
@@ -131,6 +131,10 @@ class NovaMulticolumnFilter extends Filter
                 } else {
                     $value['operators'] = self::restructureArray($value['operators']);
                 }
+            }
+
+            if (!isset($value['column'])) {
+                $value['column'] = $column;
             }
 
             $value['value'] = $column;
