@@ -3,14 +3,33 @@
 namespace dddeeemmmooonnn\NovaMulticolumnFilter;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 use Laravel\Nova\Filters\Filter;
-use Laravel\Nova\Nova;
 
 class NovaMulticolumnFilter extends Filter
 {
     public $component = 'nova-multicolumn-filter';
 
-    protected static $default_column_type = 'text';
+    protected $columns = [];
+
+    protected $manual_update = false;
+
+    protected $default_column_type = 'text';
+
+    public function __construct($columns = null, $manual_update = null, $default_column_type = null)
+    {
+        if ($columns !== null) {
+            $this->columns = $columns;
+        }
+
+        if ($manual_update !== null) {
+            $this->manual_update = $manual_update;
+        }
+
+        if ($default_column_type !== null) {
+            $this->default_column_type = $default_column_type;
+        }
+    }
 
     public function apply(Request $request, $query, $value)
     {
@@ -18,6 +37,7 @@ class NovaMulticolumnFilter extends Filter
 
         foreach (json_decode($value, true) as $val) {
             $val['value'] = urldecode($val['value']);
+
             if (!$val['operator'] && in_array($columns[$val['column']]['type'], ['select', 'checkbox'])) {
                 $val['operator'] = '=';
             }
@@ -39,37 +59,6 @@ class NovaMulticolumnFilter extends Filter
         return $query;
     }
 
-    protected function columns()
-    {
-        return [
-            'name' => '',
-            'email' => [
-                'defaultOperator' => 'LIKE',
-                'defaultValue' => 'adm',
-                'preset' => true,
-            ],
-            'id1' => [
-                'type' => 'number',
-                'column' => 'id'
-            ],
-            'id2' => [
-                'type' => 'select',
-                'options' => [
-                    '1' => 'One',
-                    '2' => 'Two',
-                ],
-                'column' => 'id',
-            ],
-            'id3' => [
-                'type' => 'checkbox',
-                'column' => 'id'
-            ],
-            'updated_at' => [
-                'type' => 'date',
-            ]
-        ];
-    }
-
     protected function operatorsDefault()
     {
         return [
@@ -84,23 +73,26 @@ class NovaMulticolumnFilter extends Filter
 
     public function options(Request $request)
     {
-        return json_encode($this->getOptions());
+        return json_encode([
+            'columns' => $this->getOptions(),
+            'manual' => $this->manual_update,
+        ]);
     }
 
     private function getOptions()
     {
-        $columns = $this->columns();
-        foreach ($columns as $column => $value) {
+        $columns = [];
+        foreach ($this->columns as $column => $value) {
             if (is_string($value)) {
                 $value = [];
             }
 
             if (!isset($value['label'])) {
-                $value['label'] = Nova::humanize($column);
+                $value['label'] = str_replace('_', ' ', Str::title(Str::snake($column, '_')));
             }
 
             if (!isset($value['type'])) {
-                $value['type'] = static::$default_column_type;
+                $value['type'] = $this->default_column_type;
             }
 
             if ($value['type'] === 'select') {
@@ -111,25 +103,25 @@ class NovaMulticolumnFilter extends Filter
                 if (is_string($value['options'])) {
                     $ucf = ucfirst($value['options']);
                     if (method_exists($this, "options$ucf")) {
-                        $value['options'] = self::restructureArray($this->{"options$ucf"}());
+                        $value['options'] = $this->restructureArray($this->{"options$ucf"}());
                     } else {
                         throw new \Exception("Method options$ucf not exists in " . get_class($this));
                     }
                 } else {
-                    $value['options'] = self::restructureArray($value['options']);
+                    $value['options'] = $this->restructureArray($value['options']);
                 }
             } elseif ($value['type'] !== 'checkbox') {
                 if (!isset($value['operators']) || !$value['operators']) {
-                    $value['operators'] = self::restructureArray($this->operatorsDefault());
+                    $value['operators'] = $this->restructureArray($this->operatorsDefault());
                 } elseif (is_string($value['operators'])) {
                     $ucf = ucfirst($value['operators']);
                     if (method_exists($this, "operators$ucf")) {
-                        $value['operators'] = self::restructureArray($this->{"operators$ucf"}());
+                        $value['operators'] = $this->restructureArray($this->{"operators$ucf"}());
                     } else {
                         throw new \Exception("Method operators$ucf not exists in " . get_class($this));
                     }
                 } else {
-                    $value['operators'] = self::restructureArray($value['operators']);
+                    $value['operators'] = $this->restructureArray($value['operators']);
                 }
             }
 
@@ -145,7 +137,7 @@ class NovaMulticolumnFilter extends Filter
         return $columns;
     }
 
-    private static function restructureArray($array)
+    private function restructureArray($array)
     {
         $return = [];
         foreach ($array as $value => $label) {

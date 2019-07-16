@@ -3,7 +3,7 @@
         <h3 class="text-sm uppercase tracking-wide text-80 bg-30 p-3">{{ filter.name }}</h3>
 
         <div class="">
-            <div v-for="(value, index) in rows" class="flex p-2 w-full">
+            <div v-for="(value, index) in rows" :key="value.value" class="flex p-2 w-full">
                 <Column :columns="columns"
                         :operators="operators"
                         :column="value.column"
@@ -18,6 +18,13 @@
 
             <div class="p-2">
                 <button @click="addColumn" class="btn btn-default btn-primary">Add</button>
+                <button
+                    v-if="manualUpdate"
+                    @click="update"
+                    class="btn btn-default btn-primary"
+                >
+                    Apply
+                </button>
             </div>
         </div>
     </div>
@@ -46,13 +53,16 @@ export default {
         return {
             rows: [],
             columns: [],
-            operators : [],
+            operators: [],
+            manualUpdate: false,
         }
     },
 
     mounted() {
         let t = JSON.parse(this.options[0].value);
-        this.columns = t;
+
+        this.columns = t.columns;
+        this.manualUpdate = t.manual;
 
         try {
             this.rows = JSON.parse(this.value);
@@ -60,12 +70,12 @@ export default {
             this.rows = [];
         }
         if (this.rows.length === 0) {
-            for (let i in t) {
-                if (t[i].preset) {
+            for (let i in t.columns) {
+                if (t.columns[i].preset) {
                     this.rows.push({
                         column: i,
-                        operator: t[i].defaultOperator || '',
-                        value: encodeURIComponent(t[i].defaultValue || ''),
+                        operator: t.columns[i].defaultOperator || '',
+                        value: encodeURIComponent(t.columns[i].defaultValue || ''),
                     });
                 }
             }
@@ -74,7 +84,11 @@ export default {
     },
 
     methods: {
-        handleChange() {
+        handleChange(manual = false) {
+            if (this.manualUpdate && !manual) {
+                return;
+            }
+
             for (let i = 0; i < this.rows.length; i++) {
                 if (!this.rows[i].column || !this.rows[i].operator || this.rows[i].value === '') {
                     return;
@@ -107,6 +121,10 @@ export default {
         removeColumn(index) {
             this.rows.splice(index, 1);
             this.handleChange();
+        },
+
+        update() {
+            this.handleChange(true);
         },
     },
 
