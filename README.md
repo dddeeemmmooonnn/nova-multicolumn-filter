@@ -13,12 +13,27 @@ Run this command in your Laravel Nova project:
 
 ### Usage
 
+#### Simplified:
+
+```
+new NovaMulticolumnFilter([
+        'column' => '', //columns
+    ],
+    $manual_update = null, // Apply filter with the button
+    $default_column_type = null // Default input type
+),
+```
+
+#### Detailed:
+
+Intended use: extend filter, add different options and operators, use it with column declaration in constructor. Or extend again, and add column declaration there.
+
 Create a filter with `artisan`
 
 ```shell 
  $ php artisan nova:filter UserFilter 
  ```
-Extend your filter from the NovaMulticolumnFilter and add the columns() method with necessary columns.
+Extend your filter from the NovaMulticolumnFilter and customize operators, options, columns.
 
 Сomprehensive example:
 
@@ -29,59 +44,71 @@ class UserFilter extends NovaMulticolumnFilter
 {
     public $name = 'Filters';
 
-    protected function columns()
-    {
-        return [
-            'column1' => '',
-            'column2' => [
-                'type' => 'email',
-                'label' => 'E-mail',
-                'operators' => [
-                    '=' => '=',
-                    //...
-                ],
-                'defaultOperator' => '=',
-                'defaultValue' => 'admin@admin.com',
-                'preset' => true,
+    protected $columns = [
+        // Simple text column declaration
+        'column1' => '',
+        
+        // Customizing all
+        'column2' => [
+            'type' => 'email',
+            'label' => 'E-mail',
+            'operators' => [
+                '=' => '=',
+                //...
             ],
-            'column3' => [
-                'type' => 'checkbox',
-                'label' => 'Checkbox',
-                'defaultValue' => 'anything', // Not empty = checked
+            'defaultOperator' => '=',
+            'defaultValue' => 'admin@admin.com',
+            'preset' => true,
+        ],
+        
+        // For checkboxes
+        'column3' => [
+            'type' => 'checkbox',
+            'label' => 'Checkbox',
+            'defaultValue' => 'anything', // Not empty = checked
+        ],
+        
+        // Select type, options in array
+        'column4' => [
+            'type' => 'select',
+            'label' => 'Select',
+            'options' => [
+                '1' => 'First',
+                '2' => 'Second',
+                //...
             ],
-            'column4' => [
-                'type' => 'select',
-                'label' => 'Select',
-                'options' => [
-                    '1' => 'First',
-                    '2' => 'Second',
-                    //...
-                ],
-                'defaultValue' => '1',
-            ],
-            'column5' => [
-                'type' => 'select',
-                'label' => 'Select again',
-                'options' => 'customOptions',
-                'defaultValue' => '1',
-            ],
-            'column6' => [
-                'type' => 'number',
-                'label' => 'Number',
-                'operators' => 'customOperators',
-                'defaultValue' => '1',
-            ],
-            'column7' => [
-                'type' => 'date',
-                'label' => 'Date',
-            ],
-            'column8' => [
-                'type' => 'date',
-                'label' => 'Date',
-                'column' => 'column7',
-            ],
-        ];
-    }
+            'defaultValue' => '1',
+        ],
+        
+        // Select type, options in optionsCustomOptions() method
+        'column5' => [
+            'type' => 'select',
+            'label' => 'Select again',
+            'options' => 'customOptions',
+            'defaultValue' => '1',
+        ],
+        
+        // operators in operatorsCustomOperators() method
+        'column6' => [
+            'type' => 'number',
+            'label' => 'Number',
+            'operators' => 'customOperators',
+            'defaultValue' => '1',
+        ],
+        
+        // Date type
+        'column7' => [
+            'type' => 'date',
+            'label' => 'Date',
+        ],
+        
+        // Using one db column in different declarations
+        'column8' => [
+            'type' => 'date',
+            'label' => 'Date',
+            'column' => 'column7',
+        ],
+    ];
 
     protected function operatorsCustomOperators()
     {
@@ -105,6 +132,8 @@ class UserFilter extends NovaMulticolumnFilter
 
     protected static $default_column_type = 'text';
     
+    protected $manual_update = false;
+    
     protected function operatorsDefault()
     {
         return [
@@ -123,7 +152,7 @@ Column options:
 
 * type - input type
     * select - options required, operator `=`
-    * date - using whereDate
+    * date - using whereDate in apply() function
     * checkbox - operator `=`
     * text, email, number and other \<input type="\*\*\*"\/\>
 
@@ -140,7 +169,7 @@ Method must be declared as `operatorsYourName`
 
 * preset - preset columns when filter is empty, applied after opening filters menu
 
-* column - column name, if you want to use several types for one column (why?)
+* column - column name, if you want to use several types for one column
 
 ### Authors
 
