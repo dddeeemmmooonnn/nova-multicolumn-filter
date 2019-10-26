@@ -13,18 +13,18 @@
                         @change="childChange"
                 >
                 </Column>
-                <button @click="removeColumn(index)" class="btn btn-block p-1 rounded ml-1 btn-danger">X</button>
+                <div @click="removeColumn(index)" class="btn btn-block p-1 rounded ml-1 btn-danger close-button cursor-pointer">X</div>
             </div>
 
             <div class="p-2">
-                <button @click="addColumn" class="btn btn-default btn-primary">Add</button>
-                <button
+                <div @click="addColumn" class="btn btn-default btn-primary cursor-pointer">Add</div>
+                <div
                     v-if="manualUpdate"
                     @click="update"
-                    class="btn btn-default btn-primary"
+                    class="btn btn-default btn-primary cursor-pointer"
                 >
                     Apply
-                </button>
+                </div>
             </div>
         </div>
     </div>
@@ -111,6 +111,7 @@ export default {
         },
 
         addColumn() {
+            console.log('asdf');
             this.rows.push({
                 column: '',
                 operator: '',
@@ -143,3 +144,11 @@ export default {
     },
 }
 </script>
+
+<style scoped>
+    .close-button {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+</style>
