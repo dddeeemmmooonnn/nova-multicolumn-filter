@@ -50,7 +50,9 @@ class NovaMulticolumnFilter extends Filter
                 $val['value'] = '%' . $val['value'] . '%';
             }
 
-            if ($columns[$val['column']]['type'] === 'date') {
+            if ($columns[$val['column']]['apply']) {
+                $query = $this->{$columns[$val['column']]['apply']}($query, $columns[$val['column']]['column'], $val['operator'], $val['value']);
+            } elseif ($columns[$val['column']]['type'] === 'date') {
                 $query = $query->whereDate($columns[$val['column']]['column'], $val['operator'], $val['value']);
             } else {
                 $query = $query->where($columns[$val['column']]['column'], $val['operator'], $val['value']);
@@ -101,11 +103,11 @@ class NovaMulticolumnFilter extends Filter
                 }
 
                 if (is_string($value['options'])) {
-                    $ucf = ucfirst($value['options']);
-                    if (method_exists($this, "options$ucf")) {
-                        $value['options'] = $this->restructureArray($this->{"options$ucf"}());
+                    $method = 'options' . ucfirst($value['options']);
+                    if (method_exists($this, $method)) {
+                        $value['options'] = $this->restructureArray($this->$method());
                     } else {
-                        throw new \Exception("Method options$ucf not exists in " . get_class($this));
+                        throw new \Exception("Method $method not exists in " . get_class($this));
                     }
                 } else {
                     $value['options'] = $this->restructureArray($value['options']);
@@ -114,11 +116,11 @@ class NovaMulticolumnFilter extends Filter
                 if (!isset($value['operators']) || !$value['operators']) {
                     $value['operators'] = $this->restructureArray($this->operatorsDefault());
                 } elseif (is_string($value['operators'])) {
-                    $ucf = ucfirst($value['operators']);
-                    if (method_exists($this, "operators$ucf")) {
-                        $value['operators'] = $this->restructureArray($this->{"operators$ucf"}());
+                    $method = 'operators' . ucfirst($value['operators']);
+                    if (method_exists($this, $method)) {
+                        $value['operators'] = $this->restructureArray($this->$method());
                     } else {
-                        throw new \Exception("Method operators$ucf not exists in " . get_class($this));
+                        throw new \Exception("Method $method not exists in " . get_class($this));
                     }
                 } else {
                     $value['operators'] = $this->restructureArray($value['operators']);
@@ -127,6 +129,17 @@ class NovaMulticolumnFilter extends Filter
 
             if (!isset($value['column'])) {
                 $value['column'] = $column;
+            }
+
+            if (isset($value['apply'])) {
+                $method = 'apply' . ucfirst($value['apply']);
+                if (method_exists($this, $method)) {
+                    $value['apply'] = $method;
+                } else {
+                    throw new \Exception("Method $method not exists in " . get_class($this));
+                }
+            } else {
+                $value['apply'] = false;
             }
 
             $value['value'] = $column;

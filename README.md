@@ -59,6 +59,7 @@ class UserFilter extends NovaMulticolumnFilter
             'defaultOperator' => '=',
             'defaultValue' => 'admin@admin.com',
             'preset' => true,
+            'apply' => 'customApply',
         ],
         
         // For checkboxes
@@ -127,6 +128,11 @@ class UserFilter extends NovaMulticolumnFilter
             '3' => 'Three',
         ];
     }
+
+    protected function applyCustomApply($query, $column, $operator, $value)
+    {
+        return $query->where($column, $operator, $value);
+    }
     
     //Also you can override default values
 
@@ -170,6 +176,8 @@ Method must be declared as `operatorsYourName`
 * preset - preset columns when filter is empty, applied after opening filters menu
 
 * column - column name, if you want to use several types for one column
+
+* apply - custom apply method, that will filter the column
 
 ### Authors
 

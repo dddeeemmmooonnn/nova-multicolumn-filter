@@ -111,7 +111,6 @@ export default {
         },
 
         addColumn() {
-            console.log('asdf');
             this.rows.push({
                 column: '',
                 operator: '',
