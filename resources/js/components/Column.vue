@@ -67,7 +67,6 @@
 
         methods: {
             handleChange() {
-                console.log(this);
                 this.$emit('change', this.index, {
                     column: this.column_,
                     operator: this.getOperator,
