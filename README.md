@@ -184,7 +184,7 @@ Method must be declared as `operatorsYourName`
 * placeholder - \<input\> placeholder 
 
 ##### Localization:
-add to nova translation json file (resources/lang/vendor/nova/<lang>.json)
+add to nova translation json file (resources/lang/vendor/nova/\<lang\>.json)
 ```
     "multicolumn.select_empty_label": "—",
     "multicolumn.add": "Add",
