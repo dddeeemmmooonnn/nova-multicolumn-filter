@@ -1,11 +1,10 @@
 <template>
-    <div>
-        <h3 class="text-sm uppercase tracking-wide text-80 bg-30 p-3">{{ filter.name }}</h3>
+    <div class="nova-multicolumn-filter">
+        <h3 class="text-sm uppercase tracking-wide text-80 bg-30 p-3 nova-multicolumn-filter__name">{{ filter.name }}</h3>
 
-        <div class="">
-            <div v-for="(value, index) in rows" :key="value.value" class="flex p-2 w-full">
+        <div class="nova-multicolumn-filter__body">
+            <div v-for="(value, index) in rows" :key="value.columns_uid" class="flex p-2 w-full nova-multicolumn-filter__block">
                 <Column :columns="columns"
-                        :operators="operators"
                         :column="value.column"
                         :operator="value.operator"
                         :value="value.value"
@@ -16,14 +15,14 @@
                 <div @click="removeColumn(index)" class="btn btn-block p-1 rounded ml-1 btn-danger close-button cursor-pointer">X</div>
             </div>
 
-            <div class="p-2">
-                <div @click="addColumn" class="btn btn-default btn-primary cursor-pointer">Add</div>
+            <div class="p-2 nova-multicolumn-filter__buttons">
+                <div @click="addColumn" class="btn btn-default btn-primary cursor-pointer nova-multicolumn-filter__add">{{__('multicolumn.add')}}</div>
                 <div
                     v-if="manualUpdate"
                     @click="update"
-                    class="btn btn-default btn-primary cursor-pointer"
+                    class="btn btn-default btn-primary cursor-pointer nova-multicolumn-filter__apply"
                 >
-                    Apply
+                    {{__('multicolumn.apply')}}
                 </div>
             </div>
         </div>
@@ -53,8 +52,9 @@ export default {
         return {
             rows: [],
             columns: [],
-            operators: [],
             manualUpdate: false,
+            prevValue: null,
+            columns_uid: 0,
         }
     },
 
@@ -73,6 +73,7 @@ export default {
             for (let i in t.columns) {
                 if (t.columns[i].preset) {
                     this.rows.push({
+                        columns_uid: this.columns_uid++,
                         column: i,
                         operator: t.columns[i].defaultOperator || '',
                         value: encodeURIComponent(t.columns[i].defaultValue || ''),
@@ -97,6 +98,11 @@ export default {
 
             let value = this.rows.length === 0 ? '' : JSON.stringify(this.rows);
 
+            if (value === this.prevValue && !manual) {
+                return;
+            }
+            this.prevValue = value;
+
             this.$store.commit(`${this.resourceName}/updateFilterState`, {
                 filterClass: this.filterKey,
                 value: value,
@@ -112,6 +118,7 @@ export default {
 
         addColumn() {
             this.rows.push({
+                columns_uid: this.columns_uid++,
                 column: '',
                 operator: '',
                 value: '',
@@ -141,6 +148,14 @@ export default {
             return this.$store.getters[`${this.resourceName}/getOptionsForFilter`](this.filterKey)
         },
     },
+
+    watch: {
+        value: function(value) {
+            if (!value) {
+                this.rows = [];
+            }
+        },
+    }
 }
 </script>
 

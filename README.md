@@ -19,8 +19,9 @@ Run this command in your Laravel Nova project:
 new NovaMulticolumnFilter([
         'column' => '', //columns
     ],
-    $manual_update = null, // Apply filter with the button
-    $default_column_type = null // Default input type
+    $manual_update = false, // Apply filter with the button
+    $default_column_type = 'text', // Default input type
+    $name = 'filter' // Filter name
 ),
 ```
 
@@ -60,6 +61,7 @@ class UserFilter extends NovaMulticolumnFilter
             'defaultValue' => 'admin@admin.com',
             'preset' => true,
             'apply' => 'customApply',
+            'placeholder' => 'input placeholder'
         ],
         
         // For checkboxes
@@ -178,6 +180,16 @@ Method must be declared as `operatorsYourName`
 * column - column name, if you want to use several types for one column
 
 * apply - custom apply method, that will filter the column
+
+* placeholder - \<input\> placeholder 
+
+##### Localization:
+add to nova translation json file (resources/lang/vendor/nova/<lang>.json)
+```
+    "multicolumn.select_empty_label": "—",
+    "multicolumn.add": "Add",
+    "multicolumn.apply": "Apply"
+```
 
 ### Authors
 

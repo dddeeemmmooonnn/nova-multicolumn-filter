@@ -16,19 +16,12 @@ class NovaMulticolumnFilter extends Filter
 
     protected $default_column_type = 'text';
 
-    public function __construct($columns = null, $manual_update = null, $default_column_type = null)
+    public function __construct($columns = null, $manual_update = null, $default_column_type = null, $name = null)
     {
-        if ($columns !== null) {
-            $this->columns = $columns;
-        }
-
-        if ($manual_update !== null) {
-            $this->manual_update = $manual_update;
-        }
-
-        if ($default_column_type !== null) {
-            $this->default_column_type = $default_column_type;
-        }
+        $this->columns = $columns ?? $this->columns;
+        $this->manual_update = $manual_update ?? $this->manual_update;
+        $this->default_column_type = $default_column_type ?? $this->default_column_type;
+        $this->name = $name;
     }
 
     public function apply(Request $request, $query, $value)
@@ -131,6 +124,10 @@ class NovaMulticolumnFilter extends Filter
                 $value['column'] = $column;
             }
 
+            if (!isset($value['placeholder'])) {
+                $value['placeholder'] = $value['label'];
+            }
+
             if (isset($value['apply'])) {
                 $method = 'apply' . ucfirst($value['apply']);
                 if (method_exists($this, $method)) {
@@ -156,7 +153,7 @@ class NovaMulticolumnFilter extends Filter
         foreach ($array as $value => $label) {
             $return[] = [
                 'label' => $label,
-                'value' => $value,
+                'value' => urlencode($value),
             ];
         }
         return $return;

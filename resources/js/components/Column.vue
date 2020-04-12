@@ -1,21 +1,21 @@
 <template>
-    <div style="flex: 1; align-items: center; justify-content: center;">
+    <div class="nova-multicolumn-filter__column">
         <select
-            class="w-full form-control form-select"
+            class="w-full form-control form-select nova-multicolumn-filter__column-select"
             @change="handleChangeColumn"
-            :value="column"
+            :value="column_"
         >
-            <option value="" selected>&mdash;</option>
+            <option value="" selected>{{__('multicolumn.select_empty_label')}}</option>
             <option v-for="option in columns" :value="option.value">{{option.label}}</option>
         </select>
 
         <select
             v-if="columnType !== 'select' && columnType !== 'checkbox'"
-            class="w-full form-control form-select"
+            class="w-full form-control form-select nova-multicolumn-filter__operator-select"
             @change="handleChangeOperator"
-            v-model="operator"
+            :value="operator_"
         >
-            <option value="" selected>&mdash;</option>
+            <option value="">{{__('multicolumn.select_empty_label')}}</option>
             <option v-for="option in operators" :value="option.value">{{option.label}}</option>
         </select>
 
@@ -23,26 +23,27 @@
             v-if="columnType !== 'select' && columnType !== 'checkbox'"
             :type="columnType"
             v-model="valueDecoded"
+            :placeholder="placeholder"
             @keydown.stop="handleChangeData"
             @change="handleChangeData"
-            class="w-full form-input form-input-bordered form-control"
+            class="w-full form-input form-input-bordered form-control nova-multicolumn-filter__text"
         />
 
         <input
             v-if="columnType === 'checkbox'"
             :type="columnType"
-            v-model="value"
+            v-model="value_"
             @change="handleChangeCheckbox"
-            class=" form-control"
+            class="form-control nova-multicolumn-filter__checkbox"
         />
 
         <select
             v-if="columnType === 'select'"
-            class="w-full form-control form-select"
+            class="w-full form-control form-select nova-multicolumn-filter__select"
             @change="handleChangeSelect"
-            v-model="value"
+            :value="value_"
         >
-            <option value="" selected>&mdash;</option>
+            <option value="" selected>{{__('multicolumn.select_empty_label')}}</option>
             <option v-for="option in options" :value="option.value">{{option.label}}</option>
         </select>
     </div>
@@ -58,49 +59,53 @@
             return {
                 oldColumnType: this.columnType,
                 valueDecoded: decodeURIComponent(this.value),
+                value_: this.value,
+                column_: this.column,
+                operator_: this.operator,
             }
         },
 
         methods: {
             handleChange() {
+                console.log(this);
                 this.$emit('change', this.index, {
-                    column: this.column,
+                    column: this.column_,
                     operator: this.getOperator,
-                    value: this.value,
+                    value: this.value_,
                 });
             },
 
             handleChangeColumn(event) {
-                this.column = event.target.value;
+                this.column_ = event.target.value;
                 if (this.columnType !== this.oldColumnType) {
-                    this.value = encodeURIComponent(this.valueDecoded = this.defaultValue);
-                    this.operator = this.defaultOperator;
+                    this.value_ = encodeURIComponent(this.valueDecoded = this.defaultValue);
+                    this.operator_ = this.defaultOperator;
                 }
                 this.oldColumnType = this.columnType;
                 this.handleChange();
             },
 
             handleChangeOperator(event) {
-                this.operator = event.target.value;
+                this.operator_ = event.target.value;
                 this.handleChange();
             },
 
             handleChangeData(event) {
                 this.debouncer(() => {
                     if (event.which != 9) {
-                        this.value = encodeURIComponent(this.valueDecoded.trim());
+                        this.value_ = encodeURIComponent(this.valueDecoded.trim());
                         this.handleChange();
                     }
                 })
             },
 
             handleChangeCheckbox(event) {
-                this.value = this.value ? 1 : 0;
+                this.value_ = this.value_ ? 1 : 0;
                 this.handleChange();
             },
 
             handleChangeSelect(event) {
-                this.value = encodeURIComponent(event.target.value);
+                this.value_ = event.target.value;
                 this.handleChange();
             },
 
@@ -109,32 +114,40 @@
 
         computed: {
             columnType() {
-                return this.column ? this.columns[this.column].type : 'text';
+                return this.column_ ? this.columns[this.column_].type : 'text';
             },
 
             operators() {
-                return this.column ? this.columns[this.column].operators : [];
+                return this.column_ ? this.columns[this.column_].operators : [];
             },
 
             options() {
-                return this.column ? this.columns[this.column].options : [];
+                return this.column_ ? this.columns[this.column_].options : [];
+            },
+
+            placeholder() {
+                return this.column_ ? this.columns[this.column_].placeholder : '';
             },
 
             getOperator() {
-                return this.columnType === 'select' || this.columnType === 'checkbox' ? '=' : this.operator;
+                return this.columnType === 'select' || this.columnType === 'checkbox' ? '=' : this.operator_;
             },
 
             defaultOperator() {
-                return this.column && this.columns[this.column].defaultOperator ? this.columns[this.column].defaultOperator : '';
+                return this.column_ && this.columns[this.column_].defaultOperator ? this.columns[this.column_].defaultOperator : '';
             },
 
             defaultValue() {
-                return this.column && this.columns[this.column].defaultValue ? this.columns[this.column].defaultValue : '';
+                return this.column_ && this.columns[this.column_].defaultValue ? this.columns[this.column_].defaultValue : '';
             },
         },
     }
 </script>
 
 <style scoped>
-
+    .nova-multicolumn-filter__column {
+        flex: 1;
+        align-items: center;
+        justify-content: center;
+    }
 </style>
