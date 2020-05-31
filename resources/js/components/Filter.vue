@@ -3,12 +3,13 @@
         <h3 class="text-sm uppercase tracking-wide text-80 bg-30 p-3 nova-multicolumn-filter__name">{{ filter.name }}</h3>
 
         <div class="nova-multicolumn-filter__body">
-            <div v-for="(value, index) in rows" :key="value.columns_uid" class="flex p-2 w-full nova-multicolumn-filter__block">
+            <div v-for="(value, index) in rows" :key="value.column_uid" class="flex p-2 w-full nova-multicolumn-filter__block">
                 <Column :columns="columns"
                         :column="value.column"
                         :operator="value.operator"
                         :value="value.value"
                         :index="index"
+                        :uid="value.column_uid"
                         @change="childChange"
                 >
                 </Column>
@@ -73,7 +74,7 @@ export default {
             for (let i in t.columns) {
                 if (t.columns[i].preset) {
                     this.rows.push({
-                        columns_uid: this.columns_uid++,
+                        column_uid: this.columns_uid++,
                         column: i,
                         operator: t.columns[i].defaultOperator || '',
                         value: encodeURIComponent(t.columns[i].defaultValue || ''),
@@ -118,7 +119,7 @@ export default {
 
         addColumn() {
             this.rows.push({
-                columns_uid: this.columns_uid++,
+                column_uid: this.columns_uid++,
                 column: '',
                 operator: '',
                 value: '',

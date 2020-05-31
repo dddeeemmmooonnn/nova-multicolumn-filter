@@ -52,7 +52,7 @@
 <script>
     export default {
         props: [
-            'columns', 'column', 'operator', 'value', 'index',
+            'columns', 'column', 'operator', 'value', 'index', 'uid',
         ],
 
         data() {
@@ -71,6 +71,7 @@
                     column: this.column_,
                     operator: this.getOperator,
                     value: this.value_,
+                    column_uid: this.uid,
                 });
             },
 
