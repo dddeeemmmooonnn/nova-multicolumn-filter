@@ -138,7 +138,7 @@ class UserFilter extends NovaMulticolumnFilter
     
     //Also you can override default values
 
-    protected static $default_column_type = 'text';
+    protected $default_column_type = 'text';
     
     protected $manual_update = false;
     
