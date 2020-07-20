@@ -30,6 +30,7 @@ class NovaMulticolumnFilter extends Filter
 
         foreach (json_decode($value, true) as $val) {
             $val['value'] = urldecode($val['value']);
+            $val['operator'] = urldecode($val['operator']);
 
             if (!$val['operator'] && in_array($columns[$val['column']]['type'], ['select', 'checkbox'])) {
                 $val['operator'] = '=';
